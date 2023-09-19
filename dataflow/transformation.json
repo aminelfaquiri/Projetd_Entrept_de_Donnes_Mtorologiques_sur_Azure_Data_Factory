@@ -1,0 +1,77 @@
+{
+	"name": "transformation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "datedim",
+						"type": "DatasetReference"
+					},
+					"name": "datedim"
+				},
+				{
+					"dataset": {
+						"referenceName": "datedim",
+						"type": "DatasetReference"
+					},
+					"name": "regiondim"
+				},
+				{
+					"dataset": {
+						"referenceName": "weathermetrics",
+						"type": "DatasetReference"
+					},
+					"name": "weathemetrics"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          DateID as integer,",
+				"          Date as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> datedim",
+				"source(output(",
+				"          DateID as string,",
+				"          Date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> regiondim",
+				"source(output(",
+				"          DateID as string,",
+				"          RegionID as string,",
+				"          AverageTemperature as string,",
+				"          Humidity as string,",
+				"          WindSpeed as string,",
+				"          Rainfall as string,",
+				"          SunshineHours as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> weathemetrics",
+				"datedim sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          DateID as string,",
+				"          Date as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
