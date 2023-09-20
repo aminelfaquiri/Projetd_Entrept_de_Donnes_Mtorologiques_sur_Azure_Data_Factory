@@ -28,6 +28,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "datacleaned",
+						"type": "DatasetReference"
+					},
 					"name": "datedimClean"
 				},
 				{
@@ -67,6 +71,10 @@
 				"     ignoreNoFilesFound: false) ~> weathermetrics",
 				"datedim sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          DateID as string,",
+				"          Date as string",
+				"     ),",
 				"     partitionFileNames:['datedimClean'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> datedimClean",

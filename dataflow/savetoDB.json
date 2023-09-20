@@ -8,10 +8,6 @@
 					"name": "dateclean"
 				},
 				{
-					"dataset": {
-						"referenceName": "regiondimclean",
-						"type": "DatasetReference"
-					},
 					"name": "regiondimclean"
 				}
 			],
@@ -25,8 +21,7 @@
 				"          RegionName as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> regiondimclean"
+				"     validateSchema: false) ~> regiondimclean"
 			]
 		}
 	}
