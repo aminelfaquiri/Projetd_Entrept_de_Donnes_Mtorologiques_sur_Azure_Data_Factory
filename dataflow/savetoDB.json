@@ -5,23 +5,56 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "datacleaned",
+						"type": "DatasetReference"
+					},
 					"name": "dateclean"
 				},
 				{
+					"dataset": {
+						"referenceName": "regiondimclean",
+						"type": "DatasetReference"
+					},
 					"name": "regiondimclean"
+				},
+				{
+					"dataset": {
+						"referenceName": "weathermetricsclean",
+						"type": "DatasetReference"
+					},
+					"name": "weathermetricsclean"
 				}
 			],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> dateclean",
+				"source(output(",
+				"          DateID as string,",
+				"          Date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> dateclean",
 				"source(output(",
 				"          RegionID as string,",
 				"          RegionName as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
-				"     validateSchema: false) ~> regiondimclean"
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> regiondimclean",
+				"source(output(",
+				"          DateID as string,",
+				"          RegionID as string,",
+				"          AverageTemperature as string,",
+				"          Humidity as string,",
+				"          WindSpeed as string,",
+				"          Rainfall as string,",
+				"          SunshineHours as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> weathermetricsclean"
 			]
 		}
 	}
