@@ -42,8 +42,10 @@
 								"datasetParameters": {
 									"datedim": {},
 									"regiondim": {},
-									"weathemetrics": {},
-									"sink1": {}
+									"weathermetrics": {},
+									"dateclean": {},
+									"regiondimclean": {},
+									"weathermetricsclean": {}
 								}
 							},
 							"staging": {},
@@ -67,7 +69,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"name": "[concat(parameters('factoryName'), '/datacleaned')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -75,12 +77,16 @@
 					"referenceName": "AzureBlobStorage1",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "dataclened"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"container": "mydata"
+						"fileName": "datedimClean",
+						"container": "dataclean"
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
@@ -177,6 +183,46 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/regiondimclean')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dataclened"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "regiondimclean",
+						"container": "dataclean"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "RegionID",
+						"type": "String"
+					},
+					{
+						"name": "RegionName",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/weathermetrics')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -234,6 +280,66 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/weathermetricsclean')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "dataclened"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "weathermetricsclean",
+						"container": "dataclean"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "DateID",
+						"type": "String"
+					},
+					{
+						"name": "RegionID",
+						"type": "String"
+					},
+					{
+						"name": "AverageTemperature",
+						"type": "String"
+					},
+					{
+						"name": "Humidity",
+						"type": "String"
+					},
+					{
+						"name": "WindSpeed",
+						"type": "String"
+					},
+					{
+						"name": "Rainfall",
+						"type": "String"
+					},
+					{
+						"name": "SunshineHours",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -245,6 +351,125 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/savetoDB')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "datacleaned",
+								"type": "DatasetReference"
+							},
+							"name": "dateclean"
+						},
+						{
+							"dataset": {
+								"referenceName": "regiondimclean",
+								"type": "DatasetReference"
+							},
+							"name": "regiondimclean"
+						},
+						{
+							"dataset": {
+								"referenceName": "weathermetricsclean",
+								"type": "DatasetReference"
+							},
+							"name": "weathermetricsclean"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "datacleaned",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "regiondimclean",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						},
+						{
+							"dataset": {
+								"referenceName": "weathermetricsclean",
+								"type": "DatasetReference"
+							},
+							"name": "sink3"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          DateID as string,",
+						"          Date as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> dateclean",
+						"source(output(",
+						"          RegionID as string,",
+						"          RegionName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> regiondimclean",
+						"source(output(",
+						"          DateID as string,",
+						"          RegionID as string,",
+						"          AverageTemperature as string,",
+						"          Humidity as string,",
+						"          WindSpeed as string,",
+						"          Rainfall as string,",
+						"          SunshineHours as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> weathermetricsclean",
+						"dateclean sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          DateID as string,",
+						"          Date as string",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1",
+						"regiondimclean sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          RegionID as string,",
+						"          RegionName as string",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink2",
+						"weathermetricsclean sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          DateID as string,",
+						"          RegionID as string,",
+						"          AverageTemperature as string,",
+						"          Humidity as string,",
+						"          WindSpeed as string,",
+						"          Rainfall as string,",
+						"          SunshineHours as string",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink3"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/datacleaned')]",
+				"[concat(variables('factoryId'), '/datasets/regiondimclean')]",
+				"[concat(variables('factoryId'), '/datasets/weathermetricsclean')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/transformation')]",
@@ -263,7 +488,7 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "datedim",
+								"referenceName": "regiondim",
 								"type": "DatasetReference"
 							},
 							"name": "regiondim"
@@ -273,35 +498,81 @@
 								"referenceName": "weathermetrics",
 								"type": "DatasetReference"
 							},
-							"name": "weathemetrics"
+							"name": "weathermetrics"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "DelimitedText1",
+								"referenceName": "datacleaned",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
+							"name": "dateclean"
+						},
+						{
+							"dataset": {
+								"referenceName": "regiondimclean",
+								"type": "DatasetReference"
+							},
+							"name": "regiondimclean"
+						},
+						{
+							"dataset": {
+								"referenceName": "weathermetricsclean",
+								"type": "DatasetReference"
+							},
+							"name": "weathermetricsclean"
 						}
 					],
 					"transformations": [],
 					"scriptLines": [
-						"source(output(",
-						"          DateID as integer,",
-						"          Date as date",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> datedim",
 						"source(output(",
 						"          DateID as string,",
 						"          Date as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> datedim",
+						"source(output(",
+						"          RegionID as integer,",
+						"          RegionName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> regiondim",
 						"source(output(",
+						"          DateID as integer,",
+						"          RegionID as integer,",
+						"          AverageTemperature as integer,",
+						"          Humidity as integer,",
+						"          WindSpeed as integer,",
+						"          Rainfall as integer,",
+						"          SunshineHours as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> weathermetrics",
+						"datedim sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          DateID as string,",
+						"          Date as string",
+						"     ),",
+						"     partitionFileNames:['datedimClean'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> dateclean",
+						"regiondim sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          RegionID as string,",
+						"          RegionName as string",
+						"     ),",
+						"     partitionFileNames:['regiondimclean'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> regiondimclean",
+						"weathermetrics sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
 						"          DateID as string,",
 						"          RegionID as string,",
 						"          AverageTemperature as string,",
@@ -310,24 +581,19 @@
 						"          Rainfall as string,",
 						"          SunshineHours as string",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> weathemetrics",
-						"datedim sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          DateID as string,",
-						"          Date as string",
-						"     ),",
+						"     partitionFileNames:['weathermetricsclean'],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
+						"     skipDuplicateMapOutputs: true) ~> weathermetricsclean"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/datedim')]",
+				"[concat(variables('factoryId'), '/datasets/regiondim')]",
 				"[concat(variables('factoryId'), '/datasets/weathermetrics')]",
-				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]"
+				"[concat(variables('factoryId'), '/datasets/datacleaned')]",
+				"[concat(variables('factoryId'), '/datasets/regiondimclean')]",
+				"[concat(variables('factoryId'), '/datasets/weathermetricsclean')]"
 			]
 		}
 	]
