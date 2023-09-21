@@ -29,21 +29,21 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "datedim",
+						"referenceName": "DelimitedText1",
 						"type": "DatasetReference"
 					},
 					"name": "dateclean"
 				},
 				{
 					"dataset": {
-						"referenceName": "regiondim",
+						"referenceName": "DelimitedText2",
 						"type": "DatasetReference"
 					},
 					"name": "regiondimclean"
 				},
 				{
 					"dataset": {
-						"referenceName": "weathermetrics",
+						"referenceName": "DelimitedText3",
 						"type": "DatasetReference"
 					},
 					"name": "weathermetricsclean"
@@ -79,33 +79,16 @@
 				"     ignoreNoFilesFound: false) ~> weathermetrics",
 				"datedim sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          DateID as string,",
-				"          Date as string",
-				"     ),",
 				"     partitionFileNames:['datedimClean'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> dateclean",
 				"regiondim sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          RegionID as string,",
-				"          RegionName as string",
-				"     ),",
-				"     partitionFileNames:['regiondimclean'],",
+				"     partitionFileNames:['regiondimClean'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> regiondimclean",
 				"weathermetrics sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          DateID as string,",
-				"          RegionID as string,",
-				"          AverageTemperature as string,",
-				"          Humidity as string,",
-				"          WindSpeed as string,",
-				"          Rainfall as string,",
-				"          SunshineHours as string",
-				"     ),",
 				"     partitionFileNames:['weathermetricsclean'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> weathermetricsclean"
