@@ -1,0 +1,9 @@
+{
+	"name": "aminelfaquiriADF",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "00146635-c861-4b48-9e6a-ed5f9b97c022",
+		"tenantId": "a2e466aa-4f86-4545-b5b8-97da7c8febf3"
+	}
+}
