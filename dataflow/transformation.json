@@ -26,34 +26,12 @@
 					"name": "weathermetrics"
 				}
 			],
-			"sinks": [
-				{
-					"dataset": {
-						"referenceName": "datacleaned",
-						"type": "DatasetReference"
-					},
-					"name": "dateclean"
-				},
-				{
-					"dataset": {
-						"referenceName": "regiondimclean",
-						"type": "DatasetReference"
-					},
-					"name": "regiondimclean"
-				},
-				{
-					"dataset": {
-						"referenceName": "weathermetricsclean",
-						"type": "DatasetReference"
-					},
-					"name": "weathermetricsclean"
-				}
-			],
+			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          DateID as string,",
-				"          Date as string",
+				"          DateID as integer,",
+				"          Date as date",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -76,39 +54,7 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> weathermetrics",
-				"datedim sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          DateID as string,",
-				"          Date as string",
-				"     ),",
-				"     partitionFileNames:['datedimClean'],",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> dateclean",
-				"regiondim sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          RegionID as string,",
-				"          RegionName as string",
-				"     ),",
-				"     partitionFileNames:['regiondimclean'],",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> regiondimclean",
-				"weathermetrics sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          DateID as string,",
-				"          RegionID as string,",
-				"          AverageTemperature as string,",
-				"          Humidity as string,",
-				"          WindSpeed as string,",
-				"          Rainfall as string,",
-				"          SunshineHours as string",
-				"     ),",
-				"     partitionFileNames:['weathermetricsclean'],",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> weathermetricsclean"
+				"     ignoreNoFilesFound: false) ~> weathermetrics"
 			]
 		}
 	}
