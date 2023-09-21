@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText1",
+	"name": "datedim",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage1",
