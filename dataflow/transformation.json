@@ -5,6 +5,10 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "datedim",
+						"type": "DatasetReference"
+					},
 					"name": "datedim"
 				},
 				{
@@ -24,21 +28,52 @@
 			],
 			"sinks": [
 				{
-					"name": "dateclean"
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable1",
+						"type": "DatasetReference"
+					},
+					"name": "datedimoutpute"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable2",
+						"type": "DatasetReference"
+					},
+					"name": "regionoutpute"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable3",
+						"type": "DatasetReference"
+					},
+					"name": "weathermetricsoutpute"
+				}
+			],
+			"transformations": [
+				{
+					"name": "datedimcleand"
 				},
 				{
 					"name": "regiondimclean"
 				},
 				{
 					"name": "weathermetricsclean"
+				},
+				{
+					"name": "surrogateKey1",
+					"description": "Adding new key ID starting "
 				}
 			],
-			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> datedim",
 				"source(output(",
-				"          RegionID as integer,",
+				"          DateID as string,",
+				"          Date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> datedim",
+				"source(output(",
+				"          RegionID as string,",
 				"          RegionName as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -56,21 +91,65 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> weathermetrics",
-				"datedim sink(allowSchemaDrift: true,",
+				"datedim cast(output(",
+				"          DateID as integer,",
+				"          Date as date",
+				"     ),",
+				"     errors: true) ~> datedimcleand",
+				"regiondim cast(output(",
+				"          RegionID as integer,",
+				"          RegionName as string",
+				"     ),",
+				"     errors: true) ~> regiondimclean",
+				"weathermetrics cast(output(",
+				"          DateID as integer,",
+				"          RegionID as integer,",
+				"          AverageTemperature as integer,",
+				"          Humidity as integer,",
+				"          WindSpeed as integer,",
+				"          Rainfall as integer,",
+				"          SunshineHours as integer",
+				"     ),",
+				"     errors: true) ~> weathermetricsclean",
+				"weathermetricsclean keyGenerate(output(ID as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"datedimcleand sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     partitionFileNames:['datedimClean'],",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> dateclean",
-				"regiondim sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> datedimoutpute",
+				"regiondimclean sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     partitionFileNames:['regiondimClean'],",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> regiondimclean",
-				"weathermetrics sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> regionoutpute",
+				"surrogateKey1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     partitionFileNames:['weathermetricsclean'],",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> weathermetricsclean"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> weathermetricsoutpute"
 			]
 		}
 	}
