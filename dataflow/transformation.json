@@ -5,10 +5,6 @@
 		"typeProperties": {
 			"sources": [
 				{
-					"dataset": {
-						"referenceName": "datedim",
-						"type": "DatasetReference"
-					},
 					"name": "datedim"
 				},
 				{
@@ -28,36 +24,19 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "AzureSynapseAnalyticsTable1",
-						"type": "DatasetReference"
-					},
 					"name": "dateclean"
 				},
 				{
-					"dataset": {
-						"referenceName": "AzureSynapseAnalyticsTable2",
-						"type": "DatasetReference"
-					},
 					"name": "regiondimclean"
 				},
 				{
-					"dataset": {
-						"referenceName": "AzureSynapseAnalyticsTable3",
-						"type": "DatasetReference"
-					},
 					"name": "weathermetricsclean"
 				}
 			],
 			"transformations": [],
 			"scriptLines": [
-				"source(output(",
-				"          DateID as integer,",
-				"          Date as date",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> datedim",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> datedim",
 				"source(output(",
 				"          RegionID as integer,",
 				"          RegionName as string",
@@ -79,54 +58,19 @@
 				"     ignoreNoFilesFound: false) ~> weathermetrics",
 				"datedim sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          DateID as integer,",
-				"          Date as date",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     staged: true,",
+				"     partitionFileNames:['datedimClean'],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> dateclean",
+				"     skipDuplicateMapOutputs: true) ~> dateclean",
 				"regiondim sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          DateID as integer,",
-				"          RegionID as integer,",
-				"          AverageTemperature as integer,",
-				"          Humidity as integer,",
-				"          WindSpeed as integer,",
-				"          Rainfall as integer,",
-				"          SunshineHours as integer",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     staged: true,",
+				"     partitionFileNames:['regiondimClean'],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> regiondimclean",
+				"     skipDuplicateMapOutputs: true) ~> regiondimclean",
 				"weathermetrics sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          RegionID as integer,",
-				"          RegionName as string",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     staged: true,",
+				"     partitionFileNames:['weathermetricsclean'],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> weathermetricsclean"
+				"     skipDuplicateMapOutputs: true) ~> weathermetricsclean"
 			]
 		}
 	}
